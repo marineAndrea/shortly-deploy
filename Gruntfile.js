@@ -3,6 +3,19 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     concat: {
+      options: {
+        separator: ';'
+      },
+      lib: {
+        // the files to concatenate
+        src: ['public/lib/underscore.js', 'public/lib/handlebars.js', 'public/lib/jquery.js', 'public/lib/backbone.js'],
+        // the destination of the resulting JS file
+        dest: 'public/dist/lib.js'
+      },
+      client: {
+        src: ['public/client/**/*.js'],
+        dest: 'public/dist/client.js'
+      }
     },
 
     mochaTest: {
@@ -21,14 +34,28 @@ module.exports = function(grunt) {
     },
 
     uglify: {
+      options: {
+        banner: '//concat.js 7/29 \n'
+      }, 
+      dist: {
+        files: {
+          'public/dist/client.min.js': ['public/dist/client.js'],
+          'public/dist/lib.min.js': ['public/dist/lib.js'],          
+        }
+      }
     },
 
     jshint: {
       files: [
         // Add filespec list here
+        'Gruntfile.js',
+        'server.js',
+        'app/**/*.js',
+        'lib/**/*.js',
+        'public/**/*.js',
+        'views/**/*.js'
       ],
       options: {
-        force: 'true',
         jshintrc: '.jshintrc',
         ignores: [
           'public/lib/**/*.js',
@@ -91,10 +118,13 @@ module.exports = function(grunt) {
   ////////////////////////////////////////////////////
 
   grunt.registerTask('test', [
-    'mochaTest'
+    'jshint',
+    'mochaTest',
   ]);
 
   grunt.registerTask('build', [
+    'concat',
+    'uglify'
   ]);
 
   grunt.registerTask('upload', function(n) {
@@ -103,10 +133,12 @@ module.exports = function(grunt) {
     } else {
       grunt.task.run([ 'server-dev' ]);
     }
-  });
+  }); 
 
   grunt.registerTask('deploy', [
       // add your production server task here
+      'test',
+      'build'
   ]);
 
 
